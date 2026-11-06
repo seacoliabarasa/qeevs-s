@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QEEVS | Exam Entry Validation</title>
+<style>
+:root{--navy:#14213d;--blue:#2457d6;--blue2:#eaf0ff;--bg:#f5f7fb;--text:#202938;--muted:#6b7280;--line:#e5e9f2;--green:#15803d;--red:#b91c1c;--amber:#a16207}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
+
+/* ---------- login page ---------- */
+#loginPage{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#14213d 0%,#2457d6 100%)}
+.login-box{background:#fff;width:100%;max-width:420px;border-radius:16px;padding:32px 28px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.login-brand .brand-mark{width:46px;height:46px;border-radius:12px;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:800;font-size:20px}
+.login-brand h1{margin:0;font-size:20px}
+.login-brand small{color:var(--muted);font-size:12px}
+.login-box h2{margin:0 0 6px;font-size:19px}
+.login-box > p{margin:0 0 18px;color:var(--muted);font-size:13px}
+.field{margin-bottom:15px}
+.login-error{display:none;background:#fee2e2;color:#991b1b;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:14px}
+.login-error.show{display:block}
+.btn-full{width:100%;padding:13px;font-size:14px}
+.demo-box{margin-top:20px;border:1px dashed #aabce9;background:#f8faff;border-radius:10px;padding:13px;font-size:12px;line-height:1.7}
+.demo-box strong{display:block;margin-bottom:5px;font-size:12px}
+.demo-box code{background:#e9eefc;padding:1px 6px;border-radius:4px;font-size:12px}
+
+/* ---------- app layout ---------- */
+.app{display:none;grid-template-columns:245px 1fr;min-height:100vh}
+.app.show{display:grid}
+.sidebar{background:var(--navy);color:#fff;padding:25px 16px;display:flex;flex-direction:column;gap:25px}
+.brand{display:flex;gap:11px;align-items:center;padding:0 10px}
+.brand-mark{width:42px;height:42px;border-radius:12px;background:#fff;color:var(--blue);display:grid;place-items:center;font-weight:800;font-size:19px}
+.brand h1{font-size:16px;margin:0}
+.brand small{color:#c8d3ec;font-size:11px}
+.nav-label{font-size:10px;letter-spacing:1.5px;color:#aab8d4;padding:0 12px;margin:5px 0}
+.nav{display:grid;gap:6px}
+.nav button{width:100%;text-align:left;border:0;background:transparent;color:#dbe4f7;padding:12px;border-radius:9px;font-size:14px;cursor:pointer}
+.nav button.active,.nav button:hover{background:#2a3a5b;color:#fff}
+.nav button span{display:inline-block;width:27px}
+.sidebar-foot{margin-top:auto;border-top:1px solid #35435f;padding:17px 10px;color:#bdc9df;font-size:12px;line-height:1.6}
+main{min-width:0}
+.topbar{height:76px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 32px}
+.crumb{font-size:13px;color:var(--muted)}
+.user{display:flex;align-items:center;gap:12px;font-size:13px}
+.avatar{width:35px;height:35px;border-radius:50%;background:var(--blue2);color:var(--blue);display:grid;place-items:center;font-weight:700}
+.content{padding:30px;max-width:1500px;margin:auto}
+.page-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:25px}
+.page-head h2{margin:0 0 7px;font-size:26px}
+.page-head p{margin:0;color:var(--muted);font-size:14px}
+.btn{border:0;border-radius:9px;padding:11px 15px;font-weight:650;cursor:pointer;font-size:13px}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-light{background:#fff;border:1px solid var(--line);color:var(--text)}
+.btn:hover{filter:brightness(.97)}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:22px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px}
+.stat-top{display:flex;justify-content:space-between;color:var(--muted);font-size:13px}
+.stat-icon{width:34px;height:34px;border-radius:10px;background:var(--blue2);color:var(--blue);display:grid;place-items:center}
+.stat strong{display:block;font-size:28px;margin:14px 0 5px}
+.stat small{color:var(--muted);font-size:12px}
+.columns{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,1fr);gap:18px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:18px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;padding:19px 20px;border-bottom:1px solid var(--line);gap:10px}
+.panel-head h3{margin:0;font-size:15px}
+.panel-body{padding:20px}
+.muted{color:var(--muted);font-size:13px}
+.signup-code{margin-top:14px}
+.session{background:#f8faff;border:1px solid #dce6ff;padding:16px;border-radius:11px;margin-bottom:12px}
+.session h4{margin:0 0 7px;font-size:14px}
+.session p{margin:0 0 12px;color:var(--muted);font-size:12px}
+.session-foot{display:flex;justify-content:space-between;align-items:center;font-size:12px;gap:8px}
+.pill{display:inline-flex;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.pill.green{background:#dcfce7;color:var(--green)}
+.pill.red{background:#fee2e2;color:var(--red)}
+.pill.amber{background:#fef3c7;color:var(--amber)}
+.pill.blue{background:var(--blue2);color:var(--blue)}
+table{border-collapse:collapse;width:100%;font-size:12px}
+th{text-align:left;color:var(--muted);font-weight:600;background:#fafbfe}
+th,td{padding:13px 15px;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.table-wrap{overflow:auto}
+.staff-table-wrap{max-height:480px}
+.scanner{border:1px dashed #aabce9;background:#f8faff;border-radius:12px;padding:25px 15px;text-align:center}
+.scan-icon{width:74px;height:74px;margin:0 auto 13px;border:3px solid var(--blue);border-radius:16px;display:grid;place-items:center;color:var(--blue);font-size:35px}
+.scanner h4{margin:0 0 7px}
+.scanner p{font-size:12px;color:var(--muted);line-height:1.5;margin:0 auto 16px;max-width:260px}
+.notice{background:#fff8e7;border:1px solid #f4dfaa;color:#805b12;border-radius:9px;padding:12px;font-size:12px;line-height:1.5;margin-top:14px}
+.spacer-20{height:20px}.spacer-14{height:14px}.spacer-16{height:16px}
+.view{display:none}
+.view.active{display:block}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:15px}
+label{display:block;font-size:12px;font-weight:650;margin-bottom:7px}
+input,select{width:100%;padding:11px 12px;border:1px solid #d8deea;border-radius:8px;font:inherit;font-size:13px;background:#fff}
+input:focus,select:focus{outline:2px solid #c7d6ff;border-color:var(--blue)}
+.result{display:none;margin-top:16px;border-radius:10px;padding:15px;font-size:13px;line-height:1.5}
+.result.show{display:block}
+.result.allow{background:#dcfce7;color:#166534}
+.result.deny{background:#fee2e2;color:#991b1b}
+.result.refer{background:#fef3c7;color:#854d0e}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap}
+.search{max-width:270px}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.panel-head.ok{border-top:4px solid var(--green)}
+.panel-head.bad{border-top:4px solid var(--red)}
+.count-badge{display:inline-flex;min-width:26px;justify-content:center;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:700}
+.count-badge.green{background:#dcfce7;color:var(--green)}
+.count-badge.red{background:#fee2e2;color:var(--red)}
+.head-left{display:flex;align-items:center;gap:10px}
+.login-ok{display:none;background:#dcfce7;color:#166534;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:14px}
+.login-ok.show{display:block}
+.login-switch{margin:16px 0 0;text-align:center;font-size:13px;color:var(--muted)}
+.login-switch a{color:var(--blue);font-weight:650;cursor:pointer;text-decoration:none}
+textarea{width:100%;padding:11px 12px;border:1px solid #d8deea;border-radius:8px;font:inherit;font-size:13px;background:#fff;resize:vertical}
+textarea:focus{outline:2px solid #c7d6ff;border-color:var(--blue)}
+
+@media(max-width:1000px){
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .columns,.two-col{grid-template-columns:1fr}
+  .app.show{grid-template-columns:205px 1fr}
+  .content{padding:22px}
+}
+@media(max-width:700px){
+  .app.show{grid-template-columns:1fr}
+  .sidebar{padding:14px;gap:14px}
+  .brand{padding:0}
+  .nav-label,.sidebar-foot{display:none}
+  .nav{grid-template-columns:repeat(3,1fr)}
+  .nav button{padding:9px 6px;font-size:11px;text-align:center}
+  .nav button span{display:block;width:auto;margin-bottom:4px}
+  .topbar{padding:0 17px;height:60px}
+  .content{padding:18px 13px}
+  .page-head{flex-direction:column}
+  .cards{gap:10px}
+  .stat{padding:14px}
+  .stat strong{font-size:23px}
+  .stat-top{font-size:11px}
+  .form-row{grid-template-columns:1fr}
+  .topbar .crumb{display:none}
+}
+
+/* ============ student portal (scoped) ============ */
+#studentApp{--navy:#14213d;--blue:#2457d6;--blue2:#eaf0ff;--bg:#f5f7fb;--text:#202938;--muted:#6b7280;--line:#e5e9f2;--green:#15803d;--red:#b91c1c;--amber:#a16207}
+#studentApp *{box-sizing:border-box}
+#studentApp{margin:0;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
+#st_loginPage{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#14213d 0%,#2457d6 100%)}
+#studentApp .login-box{background:#fff;width:100%;max-width:420px;border-radius:16px;padding:32px 28px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+#studentApp .brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+#studentApp .brand-mark{width:46px;height:46px;border-radius:12px;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:800;font-size:20px}
+#studentApp .brand h1{margin:0;font-size:20px}
+#studentApp .brand small{color:var(--muted);font-size:12px}
+#studentApp .login-box h2{margin:0 0 6px;font-size:19px}
+#studentApp .login-box > p{margin:0 0 18px;color:var(--muted);font-size:13px}
+#studentApp .field{margin-bottom:15px}
+#studentApp label{display:block;font-size:12px;font-weight:650;margin-bottom:7px}
+#studentApp input,#studentApp select{width:100%;padding:11px 12px;border:1px solid #d8deea;border-radius:8px;font:inherit;font-size:13px;background:#fff}
+#studentApp input:focus,#studentApp select:focus{outline:2px solid #c7d6ff;border-color:var(--blue)}
+#studentApp .pw-wrap{position:relative}
+#studentApp .pw-wrap button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--blue);font-size:12px;font-weight:650;cursor:pointer;padding:6px}
+#studentApp .pw-wrap input{padding-right:58px}
+#studentApp .err{display:none;background:#fee2e2;color:#991b1b;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:14px}
+#studentApp .err.show{display:block}
+#studentApp .btn{border:0;border-radius:9px;padding:11px 15px;font-weight:650;cursor:pointer;font-size:13px}
+#studentApp .btn-primary{background:var(--blue);color:#fff}
+#studentApp .btn-light{background:#fff;border:1px solid var(--line);color:var(--text)}
+#studentApp .btn-full{width:100%;padding:13px;font-size:14px}
+#studentApp .btn:hover{filter:brightness(.97)}
+#studentApp .hint{margin-top:20px;border:1px dashed #aabce9;background:#f8faff;border-radius:10px;padding:13px;font-size:12px;line-height:1.7}
+#studentApp .hint code{background:#e9eefc;padding:1px 6px;border-radius:4px;font-size:12px}
+#studentApp .switch{margin:16px 0 0;text-align:center;font-size:13px;color:var(--muted)}
+#studentApp .switch a{color:var(--blue);font-weight:650;text-decoration:none}
+#studentApp .tabs{display:flex;background:#eef2fb;border-radius:10px;padding:4px;margin-bottom:20px}
+#studentApp .tabs button{flex:1;border:0;background:none;padding:10px;border-radius:8px;font:inherit;font-size:13px;font-weight:650;color:var(--muted);cursor:pointer}
+#studentApp .tabs button.active{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(20,33,61,.12)}
+#studentApp .ok{display:none;background:#dcfce7;color:#166534;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:14px}
+#studentApp .ok.show{display:block}
+#st_portal{display:none}
+#st_portal.show{display:block}
+#studentApp .topbar{background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;gap:12px}
+#studentApp .topbar .brand{margin:0}
+#studentApp .topbar .brand-mark{background:#fff;color:var(--blue);width:38px;height:38px;font-size:17px}
+#studentApp .topbar .brand h1{font-size:16px}
+#studentApp .topbar .brand small{color:#c8d3ec}
+#studentApp .topbar .btn{background:transparent;color:#fff;border:1px solid #4a5a7d}
+#studentApp .wrap{max-width:1000px;margin:auto;padding:28px 18px}
+#studentApp .hello h2{margin:0 0 6px;font-size:24px}
+#studentApp .hello p{margin:0 0 22px;color:var(--muted);font-size:14px}
+#studentApp .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+#studentApp .panel{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:18px}
+#studentApp .panel-head{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+#studentApp .panel-head h3{margin:0;font-size:15px}
+#studentApp .panel-body{padding:20px}
+#studentApp .pill{display:inline-flex;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:700}
+#studentApp .pill.green{background:#dcfce7;color:var(--green)}
+#studentApp .pill.red{background:#fee2e2;color:var(--red)}
+#studentApp .pill.amber{background:#fef3c7;color:var(--amber)}
+#studentApp .pill.blue{background:var(--blue2);color:var(--blue)}
+#studentApp .kv{display:grid;grid-template-columns:130px 1fr;gap:10px;font-size:13px;margin-bottom:10px}
+#studentApp .kv span{color:var(--muted)}
+#studentApp .qr-box{display:grid;place-items:center;padding:18px;background:#f8faff;border:1px dashed #aabce9;border-radius:12px;margin:14px 0}
+#st_qrcode{background:#fff;padding:12px;border-radius:10px;min-height:100px;min-width:100px}
+#st_qrcode img,#st_qrcode canvas{display:block}
+#studentApp .payload{font-family:ui-monospace,Consolas,monospace;font-size:12px;word-break:break-all;background:#eef2fb;padding:9px 10px;border-radius:8px;margin-top:10px}
+#studentApp .notice{background:#fff8e7;border:1px solid #f4dfaa;color:#805b12;border-radius:9px;padding:12px;font-size:12px;line-height:1.5}
+#studentApp .blocked{background:#fef3c7;color:#854d0e;border-radius:10px;padding:14px;font-size:13px;line-height:1.5}
+#studentApp table{border-collapse:collapse;width:100%;font-size:12px}
+#studentApp th{text-align:left;color:var(--muted);font-weight:600;background:#fafbfe}
+#studentApp th,#studentApp td{padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+#studentApp tr:last-child td{border-bottom:0}
+#studentApp .table-wrap{overflow:auto}
+#studentApp .empty{padding:20px;color:var(--muted);font-size:13px}
+@media(max-width:760px){#studentApp .grid{grid-template-columns:1fr}
+#studentApp .topbar{padding:12px 16px}
+#studentApp .kv{grid-template-columns:105px 1fr}}
+@media print{#studentApp .topbar .btn,#studentApp .no-print{display:none!important}}
+#studentApp .login-box form > p:not(.switch){margin:0 0 18px;color:var(--muted);font-size:13px}
+#studentApp .login-box > .switch{margin-top:16px}
+#studentApp{min-height:100vh}
+#studentApp .topbar{height:auto;border-bottom:0}
+#studentApp .brand{padding:0}
+
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN PAGE ================= -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-brand">
+      <div class="brand-mark">Q</div>
+      <div><h1>QEEVS</h1><small>Exam Entry Validation System</small></div>
+    </div>
+    <h2>Sign in</h2>
+    <p>Choose your role and enter your username and password.</p>
+
+    <div id="loginOk" class="login-ok"></div>
+    <div id="loginError" class="login-error"></div>
+
+    <div class="field">
+      <label for="loginRole">Role</label>
+      <select id="loginRole">
+        <option value="guard">Security Guard</option>
+        <option value="invigilator">Invigilator</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="loginUser">Username</label>
+      <input id="loginUser" type="text" placeholder="Enter username" autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="loginPass">Password</label>
+      <input id="loginPass" type="password" placeholder="Enter password" autocomplete="current-password">
+    </div>
+    <button type="button" class="btn btn-primary btn-full" onclick="login()">Sign in</button>
+    <p class="login-switch">New security guard or invigilator? <a onclick="showSignup()">Create an account</a></p>
+    <p class="login-switch">Are you a student? <a href="#student" onclick="showStudentPortal(); return false;">Student portal login</a></p>
+
+  </div>
+  <div class="login-box" id="signupBox" style="display:none">
+    <div class="login-brand">
+      <div class="brand-mark">Q</div>
+      <div><h1>QEEVS</h1><small>Exam Entry Validation System</small></div>
+    </div>
+    <h2>Create staff account</h2>
+    <p>For security guards and invigilators. Ask the administrator for the staff sign-up code.</p>
+
+    <div id="signupError" class="login-error"></div>
+
+    <div class="field"><label for="signupName">Full name</label><input id="signupName" type="text" placeholder="Your full name" autocomplete="name"></div>
+    <div class="field"><label for="signupRole">Role</label><select id="signupRole"><option value="guard">Security Guard</option><option value="invigilator">Invigilator</option></select></div>
+    <div class="field"><label for="signupUser">Username</label><input id="signupUser" type="text" placeholder="Choose a username" autocomplete="off"></div>
+    <div class="field"><label for="signupPass">Password (at least 6 characters)</label><input id="signupPass" type="password" placeholder="Choose a password" autocomplete="new-password"></div>
+    <div class="field"><label for="signupCode">Staff sign-up code</label><input id="signupCode" type="password" placeholder="Code from the administrator" autocomplete="one-time-code"></div>
+    <button type="button" class="btn btn-primary btn-full" onclick="signUp()">Create account</button>
+    <p class="login-switch">Already have an account? <a onclick="showLogin()">Sign in</a></p>
+  </div>
+</div>
+
+<!-- ================= MAIN APP ================= -->
+<div id="studentApp" style="display:none">
+<!-- ============ STUDENT LOGIN / CREATE ACCOUNT ============ -->
+<div id="st_loginPage">
+  <div class="login-box">
+    <div class="brand">
+      <div class="brand-mark">Q</div>
+      <div><h1>QEEVS</h1><small>Student Portal</small></div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button type="button" id="st_tabLogin" class="active" role="tab">Login</button>
+      <button type="button" id="st_tabCreate" role="tab">Create account</button>
+    </div>
+
+    <!-- LOGIN: for students who already have an account -->
+    <form id="st_loginForm" autocomplete="off" novalidate>
+      <h2>Student login</h2>
+      <p>Sign in to get your exam entry QR pass.</p>
+      <div id="st_loginOk" class="ok" role="status"></div>
+      <div id="st_loginError" class="err" role="alert"></div>
+      <div class="field">
+        <label for="st_user">Username (registration number, UPPERCASE)</label>
+        <input id="st_user" type="text" placeholder="e.g. IN16/00392/26" autocomplete="username" autocapitalize="characters" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="st_pass">Password (registration number, lowercase)</label>
+        <div class="pw-wrap">
+          <input id="st_pass" type="password" placeholder="e.g. in16/00392/26" autocomplete="current-password" autocapitalize="none" spellcheck="false">
+          <button type="button" id="st_togglePw">Show</button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Login</button>
+      <p class="switch">New student? <a href="#" id="st_goCreate">Create an account</a></p>
+    </form>
+
+    <!-- CREATE ACCOUNT: first-time users -->
+    <form id="st_createForm" autocomplete="off" novalidate style="display:none">
+      <h2>Create your account</h2>
+      <p>First time here? Create your account once, then use the Login tab every time after.</p>
+      <div id="st_createError" class="err" role="alert"></div>
+      <div class="field">
+        <label for="st_cUser">Username (registration number, UPPERCASE)</label>
+        <input id="st_cUser" type="text" placeholder="e.g. IN16/00392/26" autocapitalize="characters" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="st_cPass">Password (same registration number, lowercase)</label>
+        <div class="pw-wrap">
+          <input id="st_cPass" type="password" placeholder="e.g. in16/00392/26" autocapitalize="none" spellcheck="false">
+          <button type="button" id="st_togglePw2">Show</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="st_cName">Full name</label>
+        <input id="st_cName" type="text" placeholder="Your full name" autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="st_cProg">Programme</label>
+        <input id="st_cProg" type="text" placeholder="e.g. BSc Software Engineering">
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Create account</button>
+      <p class="switch">Already have an account? <a href="#" id="st_goLogin">Login</a></p>
+    </form>
+
+    <div class="hint">
+      <strong>Your credentials</strong><br>
+      Username: your reg. number in capitals, e.g. <code>IN16/00392/26</code><br>
+      Password: the same number in small letters, e.g. <code>in16/00392/26</code>
+    </div>
+    <p class="switch"><a href="#" id="st_goStaff">&larr; Back to staff sign in</a></p>
+  </div>
+</div>
+
+<!-- ============ STUDENT PORTAL ============ -->
+<div id="st_portal">
+  <header class="topbar">
+    <div class="brand"><div class="brand-mark">Q</div><div><h1>QEEVS</h1><small>Student Portal</small></div></div>
+    <button type="button" class="btn" id="st_logoutBtn">Log out</button>
+  </header>
+
+  <div class="wrap">
+    <div class="hello"><h2 id="st_hello">Hello</h2><p>Show your QR pass to the security guard at the exam venue entrance.</p></div>
+
+    <div class="grid">
+      <div>
+        <div class="panel">
+          <div class="panel-head"><h3>My details</h3><span id="st_statusPill" class="pill green">Eligible</span></div>
+          <div class="panel-body">
+            <div class="kv"><span>Name</span><strong id="st_dName"></strong></div>
+            <div class="kv"><span>Registration No.</span><strong id="st_dReg"></strong></div>
+            <div class="kv"><span>Programme</span><strong id="st_dProg"></strong></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>Today's exam sessions</h3></div>
+          <div class="table-wrap"><table><thead><tr><th>Unit</th><th>Time</th><th>Venue</th></tr></thead><tbody>
+            <tr><td>SOEN 301 · Data Structures</td><td>01:00 PM–03:00 PM</td><td>KSU C31</td></tr>
+            <tr><td>COMP 101 · Intro to Computing</td><td>03:00 PM–05:00 PM</td><td>COMP LAB5</td></tr>
+          </tbody></table></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <div class="panel-head"><h3>My exam entry pass</h3></div>
+          <div class="panel-body">
+            <div id="st_blocked" class="blocked" style="display:none"></div>
+            <div id="st_passArea">
+              <label for="st_examSel">Exam session</label>
+              <select id="st_examSel">
+                <option value="SOEN301">SOEN 301 — Data Structures &amp; Algorithms</option>
+                <option value="COMP101">COMP 101 — Introduction to Computing</option>
+              </select>
+              <div class="qr-box"><div id="st_qrcode"></div></div>
+              <div class="payload" id="st_payload"></div>
+              <div class="notice" style="margin-top:14px">Carry your student ID too. The invigilator confirms your identity before you enter.</div>
+              <div class="no-print" style="margin-top:14px"><button type="button" class="btn btn-light" onclick="window.print()">Print pass</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>My entry history</h3></div>
+          <div id="st_historyBox"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="app" id="appShell">
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark">Q</div><div><h1>QEEVS</h1><small>Exam Entry Validation</small></div></div>
+  <div><div class="nav-label">WORKSPACE</div><nav class="nav" aria-label="Workspace">
+    <button type="button" class="active" data-view="dashboard"><span>▦</span>Dashboard</button>
+    <button type="button" data-view="scanner"><span>▣</span>QR Scanner</button>
+    <button type="button" data-view="results"><span>✔</span>Entry Results</button>
+    <button type="button" data-view="attendance"><span>☷</span>Attendance Records</button>
+    <button type="button" data-view="candidates"><span>♙</span>Candidates</button>
+    <button type="button" data-view="sessions"><span>▤</span>Exam Sessions</button>
+  </nav></div>
+  <div id="adminNav"><div class="nav-label">ADMINISTRATION</div><nav class="nav" aria-label="Administration">
+    <button type="button" data-view="reports"><span>▥</span>Reports</button>
+    <button type="button" data-view="staff"><span>☺</span>Staff Accounts</button>
+    <button type="button" data-view="settings"><span>⚙</span>Settings</button>
+  </nav></div>
+  <div class="sidebar-foot">University QR Exam Entry Validation System<br>Frontend·</div>
+</aside>
+
+<main>
+<header class="topbar">
+  <div class="crumb">University Portal / <strong id="crumb">Dashboard</strong></div>
+  <div class="user">
+    <div class="avatar" id="userAvatar">U</div>
+    <div><strong id="userName">User</strong><br><span class="muted" id="userRole">Role</span></div>
+    <button type="button" class="btn btn-light" onclick="logout()">Log out</button>
+  </div>
+</header>
+
+<div class="content">
+
+<section class="view active" id="dashboard">
+  <div class="page-head"><div><h2>Exam Entry Dashboard</h2><p>Monitor exam entry validation and candidate attendance.</p></div><button type="button" class="btn btn-primary" onclick="showView('scanner')">▣ &nbsp; Open QR Scanner</button></div>
+  <div class="cards">
+    <div class="stat"><div class="stat-top">Registered Candidates <span class="stat-icon">♙</span></div><strong>1,248</strong><small>Across current exam sessions</small></div>
+    <div class="stat"><div class="stat-top">Entries Allowed <span class="stat-icon">✓</span></div><strong>386</strong><small>Successfully validated today</small></div>
+    <div class="stat"><div class="stat-top">Denied <span class="stat-icon">⊘</span></div><strong>12</strong><small>Did not pass validation</small></div>
+    <div class="stat"><div class="stat-top">Referred <span class="stat-icon">!</span></div><strong>7</strong><small>Require manual review</small></div>
+  </div>
+  <div class="columns">
+    <div>
+      <div class="panel"><div class="panel-head"><h3>Today's Exam Sessions</h3><button type="button" class="btn btn-light" onclick="showView('sessions')">View all</button></div><div class="panel-body">
+        <div class="session"><h4>SOEN 301 · Data Structures &amp; Algorithms</h4><p>01:00 PM – 03:00 PM · KSU C31</p><div class="session-foot"><span>Validated: <strong>142 / 180</strong></span><span class="pill green">In progress</span></div></div>
+        <div class="session"><h4>COMP 101 · Introduction to Computing</h4><p>03:00 PM – 05:00 PM · COMP LAB5</p><div class="session-foot"><span>Validated: <strong>0 / 240</strong></span><span class="pill blue">Upcoming</span></div></div>
+      </div></div>
+      <div class="panel"><div class="panel-head"><h3>Recent Validation Activity</h3><button type="button" class="btn btn-light" onclick="showView('attendance')">View records</button></div><div class="table-wrap"><table><thead><tr><th>Candidate</th><th>Reg. Number</th><th>Time</th><th>Result</th></tr></thead><tbody>
+        <tr><td>Jane Achieng</td><td>IN16/00392/26</td><td>09:42 AM</td><td><span class="pill green">ALLOW</span></td></tr>
+        <tr><td>Brian Otieno</td><td>IN16/00037/23</td><td>09:40 AM</td><td><span class="pill red">DENY</span></td></tr>
+        <tr><td>Mary Wanjiku</td><td>IN16/00056/24</td><td>09:38 AM</td><td><span class="pill amber">REFER</span></td></tr>
+      </tbody></table></div></div>
+    </div>
+    <div>
+      <div class="panel"><div class="panel-head"><h3>Quick Scan</h3><span class="pill blue">Account</span></div><div class="panel-body"><div class="scanner"><div class="scan-icon">▣</div><h4>Ready to validate</h4><p>Open the scanner page to simulate checking a candidate's QR pass.</p><button type="button" class="btn btn-primary" onclick="showView('scanner')">Go to scanner</button></div></div></div>
+      <div class="panel"><div class="panel-head"><h3>Validation Flow</h3></div><div class="panel-body"><p class="muted">Each pass is checked before an entry is recorded.</p><p>1. QR pass is read</p><p>2. Candidate and exam eligibility checked</p><p>3. Identity confirmed by invigilator</p><p>4. Duplicate-entry protection checked</p><p>5. Result shown and successful entry recorded</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="scanner">
+  <div class="page-head"><div><h2>QR Pass Validation</h2><p>Validate a candidate before allowing entry into the examination venue.</p></div><span class="pill amber"></span></div>
+  <div class="columns">
+    <div class="panel"><div class="panel-head"><h3>Scan or enter QR pass details</h3></div><div class="panel-body">
+      <div class="scanner"><div class="scan-icon">▣</div><h4>Camera scanner placeholder</h4><p>Camera-based QR scanning will be integrated after choosing the QR library and backend API.</p><button type="button" class="btn btn-light" onclick="document.getElementById('regNo').focus()">Enter details manually</button></div>
+      <div class="spacer-20"></div>
+      <div class="form-row"><div><label for="regNo">Candidate registration number</label><input id="regNo" type="text" placeholder="e.g. IN16/00392/26"></div><div><label for="examCode">Exam session</label><select id="examCode"><option value="SOEN301">SOEN 301 — Data Structures</option><option value="COMP101">COMP 101 — Introduction to Computing</option></select></div></div>
+      <div class="toolbar"><button type="button" class="btn btn-primary" onclick="validateCandidate()">Validate pass</button><button type="button" class="btn btn-light" onclick="clearValidation()">Clear</button></div>
+      <div id="validationResult" class="result"></div>
+    </div></div>
+    <div class="panel"><div class="panel-head"><h3>Validation checklist</h3></div><div class="panel-body"><p>✓ QR/pass details received</p><p>✓ Candidate registration lookup</p><p>✓ Exam session eligibility</p><p>✓ Identity confirmation</p><p>✓ Duplicate-entry protection</p></div></div>
+  </div>
+</section>
+
+<section class="view" id="results">
+  <div class="page-head"><div><h2>Entry Results</h2><p>Confirmed candidates and failed candidates, shown separately.</p></div><button type="button" class="btn btn-primary" onclick="showView('scanner')">▣ &nbsp; Validate a candidate</button></div>
+  <div class="cards">
+    <div class="stat"><div class="stat-top">Confirmed <span class="stat-icon">✓</span></div><strong id="confirmedCount">0</strong><small>Allowed entry</small></div>
+    <div class="stat"><div class="stat-top">Failed <span class="stat-icon">⊘</span></div><strong id="failedCount">0</strong><small>Denied entry</small></div>
+  </div>
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-head ok"><div class="head-left"><h3>Confirmed students</h3><span class="count-badge green" id="confirmedBadge">0</span></div><input type="search" class="search" placeholder="Search confirmed..." oninput="filterTable('confirmedTable',this.value)"></div>
+      <div class="table-wrap"><table id="confirmedTable"><thead><tr><th>Candidate</th><th>Registration No.</th><th>Exam</th><th>Time</th><th>Status</th></tr></thead><tbody id="confirmedRows">
+        <tr><td>Jane Achieng</td><td>IN16/00392/26</td><td>SOEN 301</td><td>09:42 AM</td><td><span class="pill green">CONFIRMED</span></td></tr>
+        <tr><td>Peter Kamau</td><td>IN16/00175/24</td><td>SOEN 301</td><td>09:36 AM</td><td><span class="pill green">CONFIRMED</span></td></tr>
+        <tr><td>Grace Atieno</td><td>IN16/00120/23</td><td>SOEN 301</td><td>09:31 AM</td><td><span class="pill green">CONFIRMED</span></td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head bad"><div class="head-left"><h3>Failed students</h3><span class="count-badge red" id="failedBadge">0</span></div><input type="search" class="search" placeholder="Search failed..." oninput="filterTable('failedTable',this.value)"></div>
+      <div class="table-wrap"><table id="failedTable"><thead><tr><th>Candidate</th><th>Registration No.</th><th>Exam</th><th>Time</th><th>Reason</th></tr></thead><tbody id="failedRows">
+        <tr><td>Brian Otieno</td><td>IN16/00037/23</td><td>SOEN 301</td><td>09:40 AM</td><td><span class="pill red">Not eligible</span></td></tr>
+        <tr><td>Kevin Mutua</td><td>IN16/00233/24</td><td>SOEN 301</td><td>09:34 AM</td><td><span class="pill red">Invalid QR pass</span></td></tr>
+      </tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="attendance">
+  <div class="page-head"><div><h2>Attendance Records</h2><p>Review validation outcomes recorded during exam entry.</p></div><button type="button" class="btn btn-light" onclick="window.print()">Print page</button></div>
+  <div class="panel"><div class="panel-head"><h3>Entry log</h3><input type="search" class="search" id="attendanceSearch" placeholder="Search candidate or registration..." oninput="filterTable('attendanceTable',this.value)"></div><div class="table-wrap"><table id="attendanceTable"><thead><tr><th>Candidate</th><th>Registration No.</th><th>Exam</th><th>Time</th><th>Outcome</th></tr></thead><tbody>
+  <tr><td>Jane Achieng</td><td>IN16/00392/26</td><td>SOEN 301</td><td>09:42 AM</td><td><span class="pill green">ALLOW</span></td></tr><tr><td>Brian Otieno</td><td>IN16/00037/23</td><td>SOEN 301</td><td>09:40 AM</td><td><span class="pill red">DENY</span></td></tr><tr><td>Mary Wanjiku</td><td>IN16/00056/24</td><td>SOEN 301</td><td>09:38 AM</td><td><span class="pill amber">REFER</span></td></tr>
+  </tbody></table></div></div>
+</section>
+
+<section class="view" id="candidates">
+  <div class="page-head"><div><h2>Candidates</h2><p>Search the sample candidate register.</p></div><button type="button" id="addCandidateBtn" class="btn btn-primary" onclick="alert('Candidate creation will be connected to the backend API in a later step.')">+ Add candidate</button></div>
+  <div class="panel"><div class="panel-head"><h3>Candidate register</h3><input type="search" class="search" placeholder="Search candidates..." oninput="filterTable('candidateTable',this.value)"></div><div class="table-wrap"><table id="candidateTable"><thead><tr><th>Name</th><th>Registration No.</th><th>Programme</th><th>Status</th><th>Student portal account</th></tr></thead><tbody></tbody></table></div></div>
+</section>
+
+<section class="view" id="sessions">
+  <div class="page-head"><div><h2>Exam Sessions</h2><p>View the scheduled examination sessions.</p></div><button type="button" id="addSessionBtn" class="btn btn-primary" onclick="alert('Session creation will be connected to the backend API in a later step.')">+ Create session</button></div>
+  <div class="panel"><div class="table-wrap"><table><thead><tr><th>Unit</th><th>Exam</th><th>Date</th><th>Time</th><th>Venue</th><th>Status</th></tr></thead><tbody><tr><td>SOEN 301</td><td>Data Structures &amp; Algorithms</td><td>Today</td><td>01:00 PM–03:00 PM</td><td>KSU C31</td><td><span class="pill green">In progress</span></td></tr><tr><td>COMP 101</td><td>Introduction to Computing</td><td>Today</td><td>14:00–16:00</td><td>Lecture Theatre 2</td><td><span class="pill blue">Upcoming</span></td></tr></tbody></table></div></div>
+</section>
+
+<section class="view" id="reports">
+  <div class="page-head"><div><h2>Reports</h2><p>Overview of exam entry validation outcomes.</p></div></div>
+  <div class="cards"><div class="stat"><div class="stat-top">Allowed</div><strong>386</strong><small>Sample count</small></div><div class="stat"><div class="stat-top">Denied</div><strong>12</strong><small>Sample count</small></div><div class="stat"><div class="stat-top">Referred</div><strong>7</strong><small>Sample count</small></div><div class="stat"><div class="stat-top">Total decisions</div><strong>405</strong><small>Sample count</small></div></div>
+  <div class="panel"><div class="panel-body"><p>Reports will later be generated from verified database records, with date, exam session, venue, and outcome filters.</p><button type="button" class="btn btn-light" onclick="window.print()">Print report view</button></div></div>
+</section>
+
+<section class="view" id="staff">
+  <div class="page-head"><div><h2>Staff Accounts</h2><p>Add or remove the security guards and invigilators who can sign in.</p></div></div>
+  <div class="cards">
+    <div class="stat"><div class="stat-top">Security guards <span class="stat-icon">♙</span></div><strong id="guardCount">0</strong><small>Accounts that can sign in</small></div>
+    <div class="stat"><div class="stat-top">Invigilators <span class="stat-icon">♙</span></div><strong id="invigCount">0</strong><small>Accounts that can sign in</small></div>
+  </div>
+  <div class="columns">
+    <div class="panel">
+      <div class="panel-head"><h3>Guards and invigilators</h3><div class="toolbar"><input type="search" class="search" id="staffSearch" placeholder="Search staff..." oninput="filterTable('staffTable',this.value)"><button type="button" class="btn btn-light" onclick="removeAllAdded()">Remove all added</button></div></div>
+      <div class="table-wrap staff-table-wrap"><table id="staffTable"><thead><tr><th>Name</th><th>Role</th><th>Username</th><th></th></tr></thead><tbody id="staffRows"></tbody></table></div>
+    </div>
+    <div>
+    <div class="panel">
+      <div class="panel-head"><h3>Add a staff account</h3></div>
+      <div class="panel-body">
+        <div class="field"><label for="staffName">Full name</label><input id="staffName" type="text" placeholder="e.g. Peter Kamau"></div>
+        <div class="form-row">
+          <div><label for="staffRole">Role</label><select id="staffRole"><option value="guard">Security Guard</option><option value="invigilator">Invigilator</option></select></div>
+          <div><label for="staffUser">Username</label><input id="staffUser" type="text" placeholder="e.g. guard4" autocomplete="off"></div>
+        </div>
+        <div class="field"><label for="staffPass">Password (at least 6 characters)</label><input id="staffPass" type="password" placeholder="Choose a password" autocomplete="new-password"></div>
+        <button type="button" class="btn btn-primary" onclick="addStaff()">+ Add account</button>
+        <div id="staffMsg" class="result"></div>
+        <p class="muted signup-code">Staff sign-up code (give it to new guards and invigilators): <strong id="signupCodeShown"></strong></p>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Add many accounts at once</h3></div>
+      <div class="panel-body">
+        <p class="muted">One person per line: <strong>Full name, username, password</strong> (no commas inside a name or password).</p>
+        <div class="spacer-14"></div>
+        <div class="field"><label for="staffBulkRole">Role for everyone in this list</label><select id="staffBulkRole"><option value="guard">Security Guard</option><option value="invigilator">Invigilator</option></select></div>
+        <div class="field"><label for="staffBulk">Accounts</label><textarea id="staffBulk" rows="7" placeholder="Peter Kamau, guard4, Pass1234&#10;Mary Achieng, guard5, Pass5678&#10;John Otieno, guard6, Pass9012"></textarea></div>
+        <button type="button" class="btn btn-primary" onclick="addStaffBulk()">+ Add all</button>
+        <div id="staffBulkMsg" class="result"></div>
+      </div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="settings">
+  <div class="page-head"><div><h2>Settings</h2><p>Prototype configuration and system notes.</p></div></div>
+  <div class="panel"><div class="panel-head"><h3>System configuration</h3></div><div class="panel-body"><label>University / institution name</label><input type="text" value="University (configure institution name)"><div class="spacer-14"></div><label>Default identity verification policy</label><select><option>Invigilator visually confirms identity</option><option>Institution-approved alternative</option></select><div class="spacer-16"></div><p class="muted">Entry-window, identity-check, re-entry, and exception policies must be confirmed with the university before implementation.</p><button type="button" class="btn btn-primary" onclick="alert('Settings are visual only in this prototype and are not saved.')">Save settings (demo)</button></div></div>
+</section>
+
+</div>
+</main>
+</div>
+
+<script>
+/* ---------- shared with the student portal (same page) ---------- */
+const CANDIDATE_REGISTER = [
+  { reg: 'IN16/00392/26', name: 'Jane Achieng',  programme: 'BSc Software Engineering', status: 'eligible' },
+  { reg: 'IN16/00037/23', name: 'Brian Otieno',  programme: 'BSc Computer Science',     status: 'eligible' },
+  { reg: 'IN16/00056/24', name: 'Mary Wanjiku',  programme: 'BSc Software Engineering', status: 'review' }
+];
+const ENTRY_LOG_KEY = 'qeevs_entry_log';
+function saveEntryLog(entry) {
+  try {
+    const log = JSON.parse(localStorage.getItem(ENTRY_LOG_KEY) || '[]');
+    log.push(entry);
+    localStorage.setItem(ENTRY_LOG_KEY, JSON.stringify(log.slice(-500)));
+  } catch (e) { /* storage not available */ }
+}
+
+const roleLabels = { guard: 'Security Guard', invigilator: 'Invigilator', admin: 'Admin' };
+
+const adminAccount = { role: 'admin', username: 'admin1', password: 'Admin@123', name: 'Administrator', label: 'Admin' };
+
+const defaultStaff = [
+  { role: 'guard',       username: 'guard1', password: 'Guard@123', name: 'Security Guard',   label: 'Security Guard' },
+  { role: 'guard',       username: 'guard2', password: 'Guard@456', name: 'Security Guard 2', label: 'Security Guard' },
+  { role: 'guard',       username: 'guard3', password: 'Guard@789', name: 'Security Guard 3', label: 'Security Guard' },
+  { role: 'invigilator', username: 'invig1', password: 'Invig@123', name: 'Invigilator',      label: 'Invigilator' },
+  { role: 'invigilator', username: 'invig2', password: 'Invig@456', name: 'Invigilator 2',    label: 'Invigilator' },
+  { role: 'invigilator', username: 'invig3', password: 'Invig@789', name: 'Invigilator 3',    label: 'Invigilator' }
+];
+
+const STAFF_KEY = 'qeevs_extra_staff';
+function loadExtraStaff() {
+  try {
+    const list = JSON.parse(localStorage.getItem(STAFF_KEY) || '[]');
+    if (!Array.isArray(list)) return [];
+    return list
+      .filter(a => a && (a.role === 'guard' || a.role === 'invigilator') && a.username && a.password && a.name)
+      .map(a => ({ role: a.role, username: String(a.username), password: String(a.password), name: String(a.name), label: roleLabels[a.role] }));
+  } catch (e) { return []; }
+}
+function saveExtraStaff() {
+  try { localStorage.setItem(STAFF_KEY, JSON.stringify(extraStaff)); } catch (e) { /* storage not available */ }
+}
+
+const STAFF_SIGNUP_CODE = 'QEEVS-STAFF';
+
+let extraStaff = loadExtraStaff();
+let accounts = [];
+function buildAccounts() { accounts = [adminAccount, ...defaultStaff, ...extraStaff]; }
+buildAccounts();
+
+const permissions = {
+  guard:       ['dashboard', 'scanner', 'results'],
+  invigilator: ['dashboard', 'scanner', 'results', 'attendance', 'candidates', 'sessions'],
+  admin:       ['dashboard', 'scanner', 'results', 'attendance', 'candidates', 'sessions', 'reports', 'staff', 'settings']
+};
+
+const labels = {dashboard:'Dashboard',scanner:'QR Scanner',results:'Entry Results',attendance:'Attendance Records',candidates:'Candidates',sessions:'Exam Sessions',reports:'Reports',staff:'Staff Accounts',settings:'Settings'};
+let currentUser = null;
+
+/* ---------- login / logout ---------- */
+function login() {
+  const role = document.getElementById('loginRole').value;
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const err  = document.getElementById('loginError');
+  document.getElementById('loginOk').classList.remove('show');
+
+  const match = accounts.find(a => a.role === role && a.username === user && a.password === pass);
+
+  if (!match) {
+    err.textContent = 'Incorrect role, username or password. Please try again.';
+    err.classList.add('show');
+    return;
+  }
+
+  err.classList.remove('show');
+  currentUser = match;
+
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appShell').classList.add('show');
+  document.getElementById('userName').textContent = match.name;
+  document.getElementById('userRole').textContent = match.label;
+  document.getElementById('userAvatar').textContent = match.name.charAt(0);
+
+  applyRoleAccess();
+  showView('dashboard');
+}
+
+function logout() {
+  currentUser = null;
+  document.getElementById('appShell').classList.remove('show');
+  document.getElementById('loginPage').style.display = 'grid';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').classList.remove('show');
+  clearValidation();
+}
+
+/* hide menu items the role cannot use */
+function applyRoleAccess() {
+  const allowed = permissions[currentUser.role];
+  document.querySelectorAll('[data-view]').forEach(b => {
+    b.style.display = allowed.includes(b.dataset.view) ? '' : 'none';
+  });
+  document.getElementById('adminNav').style.display = allowed.includes('reports') ? '' : 'none';
+  /* only admin can see the add / create buttons */
+  const isAdmin = currentUser.role === 'admin';
+  document.getElementById('addCandidateBtn').style.display = isAdmin ? '' : 'none';
+  document.getElementById('addSessionBtn').style.display = isAdmin ? '' : 'none';
+}
+
+/* press Enter to sign in */
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+document.getElementById('loginUser').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+/* ---------- page switching ---------- */
+function showView(id) {
+  if (!currentUser || !permissions[currentUser.role].includes(id)) { return; }
+  if (id === 'candidates') renderCandidates();
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === id));
+  document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === id));
+  document.getElementById('crumb').textContent = labels[id] || id;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+/* ---------- candidate register + student portal accounts (same data the student page uses) ---------- */
+function renderCandidates() {
+  let accts = {};
+  try { accts = JSON.parse(localStorage.getItem('qeevs_students') || '{}') || {}; } catch (e) {}
+  const rows = CANDIDATE_REGISTER.map(c => ({ name: c.name, reg: c.reg, programme: c.programme, status: c.status, acct: accts[c.reg] }));
+  Object.keys(accts).forEach(reg => {
+    if (!CANDIDATE_REGISTER.some(c => c.reg === reg)) rows.push({ name: accts[reg].name, reg: reg, programme: accts[reg].programme || '—', status: 'unregistered', acct: accts[reg] });
+  });
+  const tb = document.querySelector('#candidateTable tbody');
+  tb.innerHTML = '';
+  const pill = (cls, text) => { const s = document.createElement('span'); s.className = 'pill ' + cls; s.textContent = text; return s; };
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    [r.name, r.reg, r.programme].forEach(t => { const td = document.createElement('td'); td.textContent = t; tr.appendChild(td); });
+    const st = document.createElement('td');
+    st.appendChild(r.status === 'eligible' ? pill('green', 'Eligible') : r.status === 'review' ? pill('amber', 'Review required') : pill('red', 'Not on register'));
+    tr.appendChild(st);
+    const ac = document.createElement('td');
+    ac.appendChild(r.acct ? pill('green', 'Created') : pill('blue', 'Not yet created'));
+    tr.appendChild(ac);
+    tb.appendChild(tr);
+  });
+}
+window.addEventListener('storage', e => { if (e.key === 'qeevs_students' && currentUser) renderCandidates(); });
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+
+/* ---------- QR validation (demo logic) ---------- */
+function validateCandidate() {
+  let reg  = document.getElementById('regNo').value.trim().toUpperCase();
+  let exam = document.getElementById('examCode').value;
+  /* a pass generated by the student portal looks like QEEVS|IN16/00392/26|SOEN301 */
+  const qr = reg.match(/^QEEVS\|([^|]+)\|([A-Z0-9]+)$/);
+  if (qr) {
+    reg = qr[1];
+    if ([...document.getElementById('examCode').options].some(o => o.value === qr[2])) {
+      exam = qr[2];
+      document.getElementById('examCode').value = exam;
+    }
+    document.getElementById('regNo').value = reg;
+  }
+  const student = CANDIDATE_REGISTER.find(c => c.reg === reg);
+  const box  = document.getElementById('validationResult');
+  let outcome = 'REFER';
+  let title   = 'REFER — Manual review required';
+  let detail  = ' Confirm the candidate and exam eligibility with the official system.';
+
+  if (!reg) {
+    outcome = 'DENY'; title = 'DENY — Registration number required';
+    detail = 'Enter a candidate registration number before validating.';
+  } else if (reg === 'SCI/2024/0142') {
+    outcome = 'ALLOW'; title = 'ALLOW — Demo candidate passed';
+    detail = 'Sample candidate found. This demo does not perform real identity verification or record a database entry.';
+  } else if (reg === 'SCI/2023/0088') {
+    outcome = 'DENY'; title = 'DENY — Demo denial';
+    detail = 'This sample registration is configured to demonstrate a denied result. No real candidate data was checked.';
+  } else if (student && student.status === 'eligible') {
+    outcome = 'ALLOW'; title = 'ALLOW — ' + student.name;
+    detail = student.programme + ' · Registered and eligible. Confirm the candidate\'s identity against their ID.';
+  } else if (student) {
+    outcome = 'REFER'; title = 'REFER — ' + student.name;
+    detail = 'Candidate needs manual review before entry. Send them to the invigilator.';
+  } else if (/^[A-Z0-9]{1,10}([\/\-.][A-Z0-9]{1,10}){2,3}$/.test(reg)) {
+    outcome = 'DENY'; title = 'DENY — Not on the candidate register';
+    detail = 'This registration number was not found in the candidate register.';
+  }
+
+  recordResult(reg, outcome, exam);
+  box.className = 'result show ' + (outcome === 'ALLOW' ? 'allow' : outcome === 'DENY' ? 'deny' : 'refer');
+  box.innerHTML = '<strong>' + title + '</strong><br>' + detail + '<br><small>Exam session: ' + exam + ' · No production record has been saved.</small>';
+}
+
+/* ---------- confirmed / failed lists ---------- */
+const demoNames = { 'IN16/00392/26': 'Jane Achieng', 'IN16/00037/23': 'Brian Otieno', 'IN16/00056/24': 'Mary Wanjiku', 'SCI/2024/0142': 'Jane Achieng', 'SCI/2023/0088': 'Brian Otieno' };
+
+function addRow(tbodyId, cells, pillText, pillClass) {
+  const tr = document.createElement('tr');
+  cells.forEach(text => { const td = document.createElement('td'); td.textContent = text; tr.appendChild(td); });
+  const last = document.createElement('td');
+  const pill = document.createElement('span');
+  pill.className = 'pill ' + pillClass;
+  pill.textContent = pillText;
+  last.appendChild(pill);
+  tr.appendChild(last);
+  document.getElementById(tbodyId).prepend(tr);
+}
+
+function recordResult(reg, outcome, exam) {
+  if (!reg) return; /* nothing to record without a registration number */
+  const name = demoNames[reg] || 'Unknown candidate';
+  const examLabel = exam === 'SOEN301' ? 'SOEN 301' : 'COMP 101';
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  if (outcome !== 'REFER') saveEntryLog({ reg: reg, exam: examLabel, time: time, outcome: outcome, ts: Date.now() });
+  if (outcome === 'ALLOW') {
+    addRow('confirmedRows', [name, reg, examLabel, time], 'CONFIRMED', 'green');
+  } else if (outcome === 'DENY') {
+    addRow('failedRows', [name, reg, examLabel, time], 'Not eligible', 'red');
+  }
+  updateCounts();
+}
+
+function updateCounts() {
+  const c = document.querySelectorAll('#confirmedRows tr').length;
+  const f = document.querySelectorAll('#failedRows tr').length;
+  document.getElementById('confirmedCount').textContent = c;
+  document.getElementById('confirmedBadge').textContent = c;
+  document.getElementById('failedCount').textContent = f;
+  document.getElementById('failedBadge').textContent = f;
+}
+updateCounts();
+
+/* ---------- staff create their own account ---------- */
+function showSignup() {
+  document.querySelector('#loginPage .login-box').style.display = 'none';
+  document.getElementById('signupBox').style.display = '';
+  document.getElementById('signupError').classList.remove('show');
+  document.getElementById('loginOk').classList.remove('show');
+}
+
+function showLogin() {
+  document.getElementById('signupBox').style.display = 'none';
+  document.querySelector('#loginPage .login-box').style.display = '';
+}
+
+function signUp() {
+  const name = document.getElementById('signupName').value.trim();
+  const role = document.getElementById('signupRole').value;
+  const username = document.getElementById('signupUser').value.trim();
+  const password = document.getElementById('signupPass').value;
+  const code = document.getElementById('signupCode').value.trim();
+  const err = document.getElementById('signupError');
+
+  let why = '';
+  if (!name || !username || !password || !code) why = 'Please fill in every box.';
+  else if (code !== STAFF_SIGNUP_CODE) why = 'Wrong staff sign-up code. Ask the administrator.';
+  else if (!/^[A-Za-z0-9._-]{3,}$/.test(username)) why = 'Username must be at least 3 characters: letters, numbers, dot, dash or underscore only.';
+  else if (password.length < 6) why = 'Password must be at least 6 characters.';
+  else if (accounts.some(a => a.username.toLowerCase() === username.toLowerCase())) why = 'That username is already taken. Choose another one.';
+
+  if (why) { err.textContent = why; err.classList.add('show'); return; }
+
+  extraStaff.push({ role: role, username: username, password: password, name: name, label: roleLabels[role] });
+  saveExtraStaff();
+  buildAccounts();
+  renderStaff();
+
+  ['signupName', 'signupUser', 'signupPass', 'signupCode'].forEach(id => { document.getElementById(id).value = ''; });
+  err.classList.remove('show');
+  showLogin();
+  document.getElementById('loginRole').value = role;
+  document.getElementById('loginUser').value = username;
+  document.getElementById('loginPass').value = '';
+  const ok = document.getElementById('loginOk');
+  ok.textContent = 'Account created. Enter your password to sign in.';
+  ok.classList.add('show');
+}
+document.getElementById('signupCodeShown').textContent = STAFF_SIGNUP_CODE;
+
+
+/* ---------- staff accounts (admin page) ---------- */
+function showStaffMsg(text, ok) {
+  const box = document.getElementById('staffMsg');
+  box.className = 'result show ' + (ok ? 'allow' : 'deny');
+  box.textContent = text;
+}
+
+function renderStaff() {
+  const body = document.getElementById('staffRows');
+  body.innerHTML = '';
+  const staff = accounts.filter(a => a.role !== 'admin');
+  staff.forEach(a => {
+    const tr = document.createElement('tr');
+    [a.name, a.label, a.username].forEach(text => {
+      const td = document.createElement('td');
+      td.textContent = text;
+      tr.appendChild(td);
+    });
+    const action = document.createElement('td');
+    if (extraStaff.includes(a)) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-light';
+      btn.textContent = 'Remove';
+      btn.addEventListener('click', () => removeStaff(a.username));
+      action.appendChild(btn);
+    } else {
+      const tag = document.createElement('span');
+      tag.className = 'pill blue';
+      tag.textContent = 'Default';
+      action.appendChild(tag);
+    }
+    tr.appendChild(action);
+    body.appendChild(tr);
+  });
+  document.getElementById('guardCount').textContent = staff.filter(a => a.role === 'guard').length;
+  document.getElementById('invigCount').textContent = staff.filter(a => a.role === 'invigilator').length;
+  filterTable('staffTable', document.getElementById('staffSearch').value);
+}
+
+function addStaff() {
+  const name = document.getElementById('staffName').value.trim();
+  const role = document.getElementById('staffRole').value;
+  const username = document.getElementById('staffUser').value.trim();
+  const password = document.getElementById('staffPass').value;
+
+  if (!name || !username || !password) { showStaffMsg('Please fill in the name, username and password.', false); return; }
+  if (!/^[A-Za-z0-9._-]{3,}$/.test(username)) { showStaffMsg('Username must be at least 3 characters: letters, numbers, dot, dash or underscore only.', false); return; }
+  if (password.length < 6) { showStaffMsg('Password must be at least 6 characters.', false); return; }
+  if (accounts.some(a => a.username.toLowerCase() === username.toLowerCase())) { showStaffMsg('That username is already taken. Choose another one.', false); return; }
+
+  extraStaff.push({ role: role, username: username, password: password, name: name, label: roleLabels[role] });
+  saveExtraStaff();
+  buildAccounts();
+  renderStaff();
+  document.getElementById('staffName').value = '';
+  document.getElementById('staffUser').value = '';
+  document.getElementById('staffPass').value = '';
+  showStaffMsg(name + ' (' + roleLabels[role] + ') can now sign in with username "' + username + '".', true);
+}
+
+function removeStaff(username) {
+  if (!confirm('Remove the account "' + username + '"?')) return;
+  extraStaff = extraStaff.filter(a => a.username !== username);
+  saveExtraStaff();
+  buildAccounts();
+  renderStaff();
+  showStaffMsg('Account "' + username + '" was removed.', true);
+}
+
+function addStaffBulk() {
+  const role = document.getElementById('staffBulkRole').value;
+  const box = document.getElementById('staffBulk');
+  const used = new Set(accounts.map(a => a.username.toLowerCase()));
+  const problems = [];
+  const keepLines = [];
+  let added = 0;
+
+  box.value.split('\n').forEach((line, i) => {
+    if (!line.trim()) return;
+    const n = i + 1;
+    const parts = line.split(',').map(p => p.trim());
+    let why = '';
+    if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) why = 'needs name, username, password';
+    else if (!/^[A-Za-z0-9._-]{3,}$/.test(parts[1])) why = 'bad username';
+    else if (parts[2].length < 6) why = 'password too short';
+    else if (used.has(parts[1].toLowerCase())) why = 'username taken';
+
+    if (why) { problems.push('line ' + n + ' (' + why + ')'); keepLines.push(line); return; }
+    used.add(parts[1].toLowerCase());
+    extraStaff.push({ role: role, username: parts[1], password: parts[2], name: parts[0], label: roleLabels[role] });
+    added++;
+  });
+
+  if (added) { saveExtraStaff(); buildAccounts(); renderStaff(); }
+  box.value = keepLines.join('\n'); /* only the lines that were skipped stay in the box */
+
+  const out = document.getElementById('staffBulkMsg');
+  let text = added + ' account' + (added === 1 ? '' : 's') + ' added as ' + roleLabels[role] + '.';
+  if (problems.length) text += ' Skipped ' + problems.length + ': ' + problems.slice(0, 5).join(', ') + (problems.length > 5 ? ', ...' : '') + '.';
+  if (!added && !problems.length) text = 'Type or paste at least one line first.';
+  out.className = 'result show ' + (added ? 'allow' : 'deny');
+  out.textContent = text;
+}
+
+function removeAllAdded() {
+  if (!extraStaff.length) { showStaffMsg('There are no added accounts to remove.', false); return; }
+  if (!confirm('Remove all ' + extraStaff.length + ' accounts you added? The default accounts stay.')) return;
+  extraStaff = [];
+  saveExtraStaff();
+  buildAccounts();
+  renderStaff();
+  showStaffMsg('All added accounts were removed.', true);
+}
+renderStaff();
+
+function clearValidation() {
+  document.getElementById('regNo').value = '';
+  const box = document.getElementById('validationResult');
+  box.className = 'result';
+  box.textContent = '';
+}
+
+function filterTable(tableId, q) {
+  const query = q.toLowerCase();
+  document.querySelectorAll('#' + tableId + ' tbody tr').forEach(r => {
+    r.style.display = r.innerText.toLowerCase().includes(query) ? '' : 'none';
+  });
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function () {
+
+const SESSION_KEY   = 'qeevs_student_session';
+
+const REG_FORMAT = /^[A-Z0-9]{1,10}([\/\-.][A-Z0-9]{1,10}){2,3}$/;
+/* registered students get their details; any other student still signs in and gets a pass */
+function lookupStudent(reg) {
+  return CANDIDATE_REGISTER.find(c => c.reg === reg) ||
+    { reg: reg, name: reg, programme: 'Not yet on the candidate register', status: 'unregistered' };
+}
+/* register status + the details the student gave when creating the account */
+function studentFor(reg) {
+  const base = lookupStudent(reg), acc = loadAccounts()[reg];
+  return acc ? Object.assign({}, base, { name: acc.name, programme: acc.programme || base.programme }) : base;
+}
+const $ = id => document.getElementById('st_' + id);
+let student = null;
+
+/* ---------- accounts (created by students on first use) ---------- */
+const ACCOUNTS_KEY = 'qeevs_students';
+let memAccounts = {}, storageBlocked = false;
+function loadAccounts() {
+  try { const a = JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || '{}'); return a && typeof a === 'object' ? a : {}; }
+  catch (e) { storageBlocked = true; return memAccounts; }
+}
+function saveAccounts(a) {
+  try { localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(a)); return true; }
+  catch (e) { storageBlocked = true; memAccounts = a; return true; }   /* kept in memory until the page is closed */
+}
+
+/* username = reg number in UPPERCASE, password = same reg number in lowercase.
+   Returns an error message, or '' when the pair is valid. */
+function checkCredentials(user, pass) {
+  if (!user || !pass) return 'Enter your registration number as the username and password.';
+  if (user !== user.toUpperCase()) return 'Your username (registration number) must be in UPPERCASE letters.';
+  if (!REG_FORMAT.test(user)) return 'That does not look like a registration number. Use the format IN16/00392/26.';
+  if (pass !== pass.toLowerCase()) return 'Your password must be your registration number in lowercase letters.';
+  if (pass !== user.toLowerCase()) return 'Incorrect password. It must be the same registration number, in lowercase.';
+  return '';
+}
+
+/* ---------- tabs ---------- */
+function showTab(which, keepMessages) {
+  const create = which === 'create';
+  $('loginForm').style.display  = create ? 'none' : '';
+  $('createForm').style.display = create ? '' : 'none';
+  $('tabLogin').classList.toggle('active', !create);
+  $('tabCreate').classList.toggle('active', create);
+  if (!keepMessages) ['loginError', 'createError', 'loginOk'].forEach(i => $(i).classList.remove('show'));
+}
+$('tabLogin').addEventListener('click', () => showTab('login'));
+$('tabCreate').addEventListener('click', () => showTab('create'));
+$('goLogin').addEventListener('click', e => { e.preventDefault(); showTab('login'); });
+$('goCreate').addEventListener('click', e => {
+  e.preventDefault();
+  const typed = $('user').value.trim();
+  showTab('create');
+  if (typed && !$('cUser').value) $('cUser').value = typed;
+  prefillFromRegister();
+});
+
+/* if the typed registration number is on the register, fill in the name and programme */
+function prefillFromRegister() {
+  const reg = $('cUser').value.trim();
+  const known = CANDIDATE_REGISTER.find(c => c.reg === reg);
+  if (known) { if (!$('cName').value) $('cName').value = known.name; if (!$('cProg').value) $('cProg').value = known.programme; }
+}
+$('cUser').addEventListener('blur', prefillFromRegister);
+
+/* ---------- login (existing accounts only) ---------- */
+$('loginForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const user = $('user').value.trim(), pass = $('pass').value.trim();
+  const err = $('loginError');
+  $('loginOk').classList.remove('show');
+  const fail = m => { err.textContent = m; err.classList.add('show'); };
+
+  const bad = checkCredentials(user, pass);
+  if (bad) return fail(bad);
+  if (!loadAccounts()[user]) return fail('No account found for this registration number. New student? Open the Create account tab.');
+  err.classList.remove('show');
+  try { sessionStorage.setItem(SESSION_KEY, user); } catch (x) {}
+  openPortal(user);
+});
+
+/* ---------- create account (first-time users) ---------- */
+$('createForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const user = $('cUser').value.trim(), pass = $('cPass').value.trim();
+  const name = $('cName').value.trim(), prog = $('cProg').value.trim();
+  const err = $('createError');
+  const fail = m => { err.textContent = m; err.classList.add('show'); };
+
+  const bad = checkCredentials(user, pass);
+  if (bad) return fail(bad);
+  if (!name) return fail('Please enter your full name.');
+  const accounts = loadAccounts();
+  if (accounts[user]) return fail('An account already exists for this registration number. Use the Login tab.');
+
+  accounts[user] = { reg: user, name: name, programme: prog, created: new Date().toISOString() };
+  if (!saveAccounts(accounts)) return fail('Could not save your account (browser storage is unavailable).');
+
+  err.classList.remove('show');
+  ['cUser', 'cPass', 'cName', 'cProg'].forEach(i => $(i).value = '');
+  showTab('login', true);
+  $('user').value = user; $('pass').value = '';
+  $('loginOk').textContent = storageBlocked
+    ? 'Account created, but your browser is blocking storage, so it will be lost when you close or refresh this page. Open the file in Chrome or Firefox to keep it.'
+    : 'Account created. Log in with your registration number and password.';
+  $('loginOk').classList.add('show');
+  $('loginError').classList.remove('show');
+});
+
+/* show/hide password buttons */
+function wireToggle(btnId, inputId) {
+  $(btnId).addEventListener('click', () => {
+    const show = $(inputId).type === 'password';
+    $(inputId).type = show ? 'text' : 'password';
+    $(btnId).textContent = show ? 'Hide' : 'Show';
+  });
+}
+wireToggle('togglePw', 'pass'); wireToggle('togglePw2', 'cPass');
+
+$('logoutBtn').addEventListener('click', () => {
+  try { sessionStorage.removeItem(SESSION_KEY); } catch (x) {}
+  student = null;
+  $('portal').classList.remove('show');
+  $('loginPage').style.display = 'grid';
+  $('user').value = ''; $('pass').value = '';
+  showTab('login');
+});
+
+/* ---------- portal ---------- */
+function openPortal(reg) {
+  const s = studentFor(reg);
+  student = s;
+  $('loginPage').style.display = 'none';
+  $('portal').classList.add('show');
+  $('hello').textContent = 'Hello, ' + s.name.split(' ')[0];
+  $('dName').textContent = s.name;
+  $('dReg').textContent = s.reg;
+  $('dProg').textContent = s.programme;
+
+  const pill = $('statusPill');
+  const eligible = s.status === 'eligible';
+  const unreg = s.status === 'unregistered';
+  pill.className = 'pill ' + (eligible ? 'green' : 'amber');
+  pill.textContent = eligible ? 'Eligible' : unreg ? 'Not registered' : 'Review required';
+
+  /* a student under review still gets a pass; the guard will refer them to the invigilator */
+  $('blocked').style.display = eligible ? 'none' : 'block';
+  if (unreg) $('blocked').textContent = 'Your registration number is not on the candidate register yet, so entry will be denied at the venue. Contact the exam office to be added.';
+  else if (!eligible) $('blocked').textContent = 'Your account needs a manual review. You can still show your pass, but you will be referred to the invigilator before entry.';
+
+  drawPass();
+  renderHistory();
+}
+
+function passText() { return 'QEEVS|' + student.reg + '|' + $('examSel').value; }
+
+function drawPass() {
+  const text = passText();
+  $('payload').textContent = text;
+  const box = $('qrcode');
+  box.innerHTML = '';
+  if (window.QRCode) {
+    new QRCode(box, { text: text, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+  } else {
+    box.textContent = 'QR image could not load (check your internet connection). Show the pass code below to the guard instead.';
+    box.style.maxWidth = '220px'; box.style.fontSize = '12px';
+  }
+}
+$('examSel').addEventListener('change', drawPass);
+
+function renderHistory() {
+  const box = $('historyBox');
+  let log = [];
+  try { log = JSON.parse(localStorage.getItem(ENTRY_LOG_KEY) || '[]'); } catch (e) {}
+  const mine = log.filter(l => l.reg === student.reg).reverse();
+  if (!mine.length) { box.innerHTML = '<div class="empty">No entry has been recorded yet.</div>'; return; }
+  const wrap = document.createElement('div'); wrap.className = 'table-wrap';
+  const t = document.createElement('table');
+  t.innerHTML = '<thead><tr><th>Exam</th><th>Time</th><th>Result</th></tr></thead>';
+  const tb = document.createElement('tbody');
+  mine.forEach(l => {
+    const tr = document.createElement('tr');
+    [l.exam, l.time].forEach(x => { const td = document.createElement('td'); td.textContent = x; tr.appendChild(td); });
+    const td = document.createElement('td'), p = document.createElement('span');
+    p.className = 'pill ' + (l.outcome === 'ALLOW' ? 'green' : 'red');
+    p.textContent = l.outcome === 'ALLOW' ? 'ALLOWED' : 'DENIED';
+    td.appendChild(p); tr.appendChild(td); tb.appendChild(tr);
+  });
+  t.appendChild(tb); wrap.appendChild(t);
+  box.innerHTML = ''; box.appendChild(wrap);
+}
+
+/* live update when a guard validates this student in the staff system (another tab) */
+window.addEventListener('storage', e => { if (e.key === ENTRY_LOG_KEY && student) renderHistory(); });
+
+/* ---------- moving between the staff sign-in and the student portal ---------- */
+function showStudentPortal() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('studentApp').style.display = '';
+  try { if (location.hash !== '#student') history.replaceState(null, '', '#student'); } catch (e) {}
+  let saved = null;
+  try { saved = sessionStorage.getItem(SESSION_KEY); } catch (e) {}
+  if (saved && REG_FORMAT.test(saved) && loadAccounts()[saved]) openPortal(saved);
+  else { $('portal').classList.remove('show'); $('loginPage').style.display = 'grid'; showTab('login'); }
+  window.scrollTo(0, 0);
+}
+function showStaffLogin() {
+  document.getElementById('studentApp').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'grid';
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+}
+window.showStudentPortal = showStudentPortal;
+window.showStaffLogin = showStaffLogin;
+$('goStaff').addEventListener('click', e => { e.preventDefault(); showStaffLogin(); });
+window.addEventListener('hashchange', () => { if (location.hash === '#student') showStudentPortal(); });
+if (location.hash === '#student') showStudentPortal();   /* index.html#student opens the student page directly */
+})();
+</script>
+</body>
+</html>
